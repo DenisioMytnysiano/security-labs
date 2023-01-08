@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Home</title>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    </head>
+    <body>
+        <main id="main-holder">
+            <h1 id="login-status"></h1>
+            <div id="buttons-container"></div>
+        </main>
+    </body>
+
+    <style>
+        html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    background-color: #3a3a3a;
+}
+
+button {
+    width: 100%;
+    padding: 7px;
+    margin: 20px;
+    height: 40px;
+    width: 120px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    background-color: #3a3a3a;
+    cursor: pointer;
+    outline: none;
+}
+
+#main-holder {
+    width: 50%;
+    height: 70%;
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    background-color: white;
+    border-radius: 7px;
+    box-shadow: 0px 0px 5px 2px black;
+}
+
+#buttons-container{
+    display: flex;
+    flex-direction: row;
+}
+    </style>
+
+    <script>
+const loginStatus = document.getElementById("login-status")
+const buttonsContainer = document.getElementById("buttons-container");
+
+var token = tryGetAccessTokenFromSession()
+if(token){
+    getCurrentUser(token);
+    buttonsContainer.replaceChildren();
+    displayLogoutButton();
+}
+else{
+    loginStatus.innerText = "Please log in or register :)"
+    buttonsContainer.replaceChildren()
+    displayLoginButton()
+    displayRegisterButton()
+}
+
+
+function tryGetAccessTokenFromSession(){
+    const session = sessionStorage.getItem("session");
+    let token;
+    try{
+        token = JSON.parse(session).sessionId;
+    }catch(ex){
+        console.error(ex);
+    }
+    return token;
+}
+
+async function getCurrentUser(token){
+    response = axios({
+        method: 'get',
+        url: 'http://localhost:3000/users/me',
+        headers: { Authorization: token }
+    }).then((response) => {
+        loginStatus.innerText = `Hello, ${response.data.me}`;
+    }).catch((response) => {
+        registerErrorMsg.style.opacity = 1;
+        registerErrorMsg.innerText = response.text
+    });
+}
+
+
+function displayLogoutButton(){
+    const logoutButton = document.createElement("button")
+    logoutButton.innerText = "Logout"
+    buttonsContainer.appendChild(logoutButton)
+    logoutButton.addEventListener("click", () => {
+        sessionStorage.removeItem("session");
+        location.reload();
+    })
+}
+
+function displayLoginButton(){
+    const loginButton = document.createElement("button")
+    loginButton.innerText = "Login"
+    loginButton.setAttribute("onClick", "location.href = '/login'")
+    buttonsContainer.appendChild(loginButton)
+}
+
+function displayRegisterButton(){
+    const registerButton = document.createElement("button")
+    registerButton.innerText = "Register"
+    registerButton.setAttribute("onClick", "location.href = '/register'")
+    buttonsContainer.appendChild(registerButton)
+}
+    </script>
+</html>
