@@ -1,1 +1,1 @@
-# auth_examples
+# Security labs
